@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ECOMMERCE — Report</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy-deep: #060913;
+    --navy: #0a1224;
+    --navy-mid: #101c38;
+    --ice: #cfe3ff;
+    --ice-bright: #eaf4ff;
+    --cyan: #6fd8e8;
+    --violet: #8f8fe8;
+    --muted: #6f7c96;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(ellipse at 50% -10%, var(--navy-mid) 0%, var(--navy) 45%, var(--navy-deep) 100%);
+    font-family:'Space Grotesk', sans-serif;
+    color:var(--ice-bright);
+    overflow-x:hidden;
+  }
+
+  #stars{
+    position:fixed;
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:0;
+    pointer-events:none;
+  }
+
+  /* shooting stars */
+  .shoot{
+    position:fixed;
+    top:0;
+    left:0;
+    width:2px;
+    height:2px;
+    background:linear-gradient(90deg, #fff, transparent);
+    border-radius:50%;
+    z-index:0;
+    pointer-events:none;
+    opacity:0;
+  }
+  .shoot.s1{ animation: shoot1 7s linear infinite; animation-delay: 1s; }
+  .shoot.s2{ animation: shoot2 9s linear infinite; animation-delay: 4.5s; }
+  .shoot.s3{ animation: shoot3 11s linear infinite; animation-delay: 7.5s; }
+
+  @keyframes shoot1{
+    0%{ transform: translate(10vw, -5vh) rotate(35deg); width:2px; opacity:0; }
+    2%{ opacity:1; width:120px; }
+    12%{ transform: translate(45vw, 40vh) rotate(35deg); opacity:0; width:2px; }
+    100%{ opacity:0; }
+  }
+  @keyframes shoot2{
+    0%{ transform: translate(70vw, -8vh) rotate(30deg); width:2px; opacity:0; }
+    2%{ opacity:1; width:90px; }
+    12%{ transform: translate(30vw, 35vh) rotate(30deg); opacity:0; width:2px; }
+    100%{ opacity:0; }
+  }
+  @keyframes shoot3{
+    0%{ transform: translate(20vw, 10vh) rotate(28deg); width:2px; opacity:0; }
+    2%{ opacity:1; width:100px; }
+    12%{ transform: translate(60vw, 55vh) rotate(28deg); opacity:0; width:2px; }
+    100%{ opacity:0; }
+  }
+
+  main{ position:relative; z-index:1; }
+
+  .hero{
+    min-height:86vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    text-align:center;
+    padding:40px 24px;
+  }
+
+  .eyebrow{
+    font-size:12px;
+    letter-spacing:0.4em;
+    color:var(--cyan);
+    margin-bottom:20px;
+    opacity:0;
+    animation: fadeUp 0.8s 0.1s ease forwards;
+  }
+
+  h1{
+    font-weight:700;
+    font-size:clamp(2.6rem, 7.5vw, 5.6rem);
+    margin:0;
+    letter-spacing:-0.02em;
+    color:var(--ice-bright);
+    text-shadow: 0 0 40px rgba(143,143,232,0.35);
+    opacity:0;
+    animation: fadeUp 0.9s 0.25s ease forwards;
+  }
+
+  .sub{
+    margin-top:20px;
+    max-width:460px;
+    color:var(--muted);
+    font-size:16px;
+    line-height:1.6;
+    opacity:0;
+    animation: fadeUp 0.9s 0.4s ease forwards;
+  }
+
+  @keyframes fadeUp{
+    from{ opacity:0; transform:translateY(18px); }
+    to{ opacity:1; transform:translateY(0); }
+  }
+
+  .scroll-cue{
+    margin-top:50px;
+    width:26px;
+    height:42px;
+    border:1.5px solid var(--muted);
+    border-radius:14px;
+    position:relative;
+    opacity:0;
+    animation: fadeUp 0.9s 0.6s ease forwards;
+  }
+  .scroll-cue::before{
+    content:"";
+    position:absolute;
+    top:8px;
+    left:50%;
+    width:4px;
+    height:4px;
+    margin-left:-2px;
+    border-radius:50%;
+    background:var(--cyan);
+    animation: dot 1.6s ease-in-out infinite;
+  }
+  @keyframes dot{
+    0%{ transform:translateY(0); opacity:1; }
+    70%{ transform:translateY(16px); opacity:0; }
+    100%{ opacity:0; }
+  }
+
+  /* ---------- report section ---------- */
+  .report-section{
+    padding:20px 24px 150px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+
+  .reveal{
+    opacity:0;
+    filter:blur(6px);
+    transform:scale(0.9);
+    transition: opacity 1.1s cubic-bezier(.16,.8,.3,1), transform 1.1s cubic-bezier(.16,.8,.3,1), filter 1.1s ease;
+  }
+  .reveal.in{
+    opacity:1;
+    filter:blur(0);
+    transform:scale(1);
+  }
+
+  .report-label{ text-align:center; margin-bottom:32px; }
+  .report-label .kicker{ font-size:12px; letter-spacing:0.3em; color:var(--cyan); }
+  .report-label h2{
+    font-weight:600;
+    font-size:clamp(1.5rem, 3.6vw, 2.2rem);
+    margin:10px 0 0;
+    color:var(--ice-bright);
+  }
+
+  .ring{
+    position:relative;
+    width:100%;
+    max-width:960px;
+    padding:2px;
+    border-radius:20px;
+    isolation:isolate;
+  }
+  .ring::before{
+    content:"";
+    position:absolute;
+    inset:-1px;
+    border-radius:20px;
+    padding:2px;
+    background:conic-gradient(from 0deg, var(--cyan), var(--violet), var(--cyan));
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+            mask-composite: exclude;
+    animation: rotate 6s linear infinite;
+    z-index:0;
+  }
+  @keyframes rotate{
+    to{ transform:rotate(360deg); }
+  }
+
+  .frame-inner{
+    position:relative;
+    z-index:1;
+    background:var(--navy-deep);
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 40px 90px -30px rgba(0,0,0,0.7);
+  }
+
+  .aspect-box{
+    position:relative;
+    width:100%;
+    padding-top:62.25%;
+  }
+  .aspect-box iframe{
+    position:absolute;
+    inset:0;
+    width:100%;
+    height:100%;
+    border:none;
+    display:block;
+  }
+
+  footer{
+    text-align:center;
+    padding:28px 20px 46px;
+    color:var(--muted);
+    font-size:12px;
+    letter-spacing:0.18em;
+    position:relative;
+    z-index:1;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    *, *::before, *::after{
+      animation:none !important;
+      transition:none !important;
+    }
+    .reveal{ opacity:1; filter:none; transform:none; }
+  }
+</style>
+</head>
+<body>
+
+  <canvas id="stars"></canvas>
+  <div class="shoot s1"></div>
+  <div class="shoot s2"></div>
+  <div class="shoot s3"></div>
+
+  <main>
+    <section class="hero">
+      <div class="eyebrow">RETAIL PERFORMANCE DASHBOARD</div>
+      <h1>ECOMMERCE</h1>
+      <p class="sub">An interactive Power BI report tracking sales, orders and customer activity.</p>
+      <div class="scroll-cue"></div>
+    </section>
+
+    <section class="report-section">
+      <div class="report-label reveal">
+        <div class="kicker">LIVE REPORT</div>
+        <h2>Sales &amp; Orders Overview</h2>
+      </div>
+
+      <div class="ring reveal">
+        <div class="frame-inner">
+          <div class="aspect-box">
+            <iframe
+              title="ECOMMERCE"
+              src="https://app.powerbi.com/view?r=eyJrIjoiNDY1MTk3YmMtNDFmMy00OWYxLWIxYjAtMDAwNjFkNDBlMjQ4IiwidCI6IjVmOTA5NjYwLWUxMDQtNDNkNC1hOGViLTA2YjNjNTkxYjBiMSJ9"
+              frameborder="0"
+              allowfullscreen="true">
+            </iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>ECOMMERCE · POWER BI REPORT</footer>
+
+  <script>
+    // ---------- scroll reveal ----------
+    const revealEls = document.querySelectorAll('.reveal');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting){
+          e.target.classList.add('in');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.2 });
+    revealEls.forEach(el => io.observe(el));
+
+    // ---------- starfield glitter ----------
+    const canvas = document.getElementById('stars');
+    const ctx = canvas.getContext('2d');
+    let w, h, stars = [];
+
+    function resize(){
+      w = canvas.width = window.innerWidth;
+      h = canvas.height = document.body.scrollHeight;
+    }
+
+    function makeStars(){
+      const count = Math.floor((w * h) / 9000);
+      stars = Array.from({ length: count }, () => ({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 1.3 + 0.3,
+        baseAlpha: Math.random() * 0.7 + 0.15,
+        phase: Math.random() * Math.PI * 2,
+        speed: Math.random() * 0.02 + 0.008,
+        hue: Math.random() > 0.8 ? '#6fd8e8' : (Math.random() > 0.6 ? '#8f8fe8' : '#eaf4ff')
+      }));
+    }
+
+    let scrollY = window.scrollY;
+    window.addEventListener('scroll', () => { scrollY = window.scrollY; }, { passive:true });
+
+    function animate(t){
+      ctx.clearRect(0, 0, w, h);
+      const viewTop = scrollY - 150;
+      const viewBottom = scrollY + window.innerHeight + 150;
+
+      for (const s of stars){
+        if (s.y < viewTop || s.y > viewBottom) continue;
+        const twinkle = Math.sin(t * s.speed + s.phase) * 0.5 + 0.5;
+        ctx.beginPath();
+        ctx.globalAlpha = s.baseAlpha * twinkle;
+        ctx.fillStyle = s.hue;
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = s.hue;
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      requestAnimationFrame(animate);
+    }
+
+    function init(){ resize(); makeStars(); }
+    window.addEventListener('resize', init);
+    window.addEventListener('load', init);
+
+    init();
+    requestAnimationFrame(animate);
+  </script>
+</body>
+</html>

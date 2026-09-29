@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investment Management Report</title>
+<style>
+  :root {
+    --bg1: #0b0820;
+    --bg2: #1a0f3d;
+    --bg3: #2d0b4e;
+    --accent: #a855f7;
+    --accent2: #38bdf8;
+    --gold: #ffd76a;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #f2f0ff;
+    background: linear-gradient(-45deg, var(--bg1), var(--bg2), var(--bg3), #120a2e);
+    background-size: 400% 400%;
+    animation: gradientShift 18s ease infinite;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Canvas glitter layer */
+  #glitter-canvas {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Floating soft orbs, parallax on scroll */
+  .orb {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(60px);
+    opacity: 0.35;
+    z-index: 0;
+    pointer-events: none;
+  }
+  .orb1 { width: 380px; height: 380px; background: var(--accent); top: -100px; left: -80px; }
+  .orb2 { width: 300px; height: 300px; background: var(--accent2); bottom: -60px; right: -60px; }
+  .orb3 { width: 260px; height: 260px; background: var(--gold); top: 40%; left: 60%; opacity: 0.2; }
+
+  .page {
+    position: relative;
+    z-index: 2;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 60px 24px 120px;
+  }
+
+  header.hero {
+    text-align: center;
+    padding: 40px 20px 60px;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 1s ease forwards 0.2s;
+  }
+
+  @keyframes fadeInUp {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  header.hero h1 {
+    font-size: clamp(28px, 5vw, 44px);
+    margin: 0 0 12px;
+    background: linear-gradient(90deg, var(--gold), var(--accent2), var(--accent), var(--gold));
+    background-size: 300% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 6s linear infinite;
+    letter-spacing: 0.5px;
+  }
+
+  @keyframes shimmer {
+    to { background-position: 300% center; }
+  }
+
+  header.hero p {
+    color: #cbc6f0;
+    font-size: 15px;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 18px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    padding: 20px;
+    margin: 40px 0;
+    transition: box-shadow 0.4s ease, transform 0.4s ease;
+  }
+  .card:hover {
+    box-shadow: 0 8px 40px rgba(168, 85, 247, 0.35);
+    transform: translateY(-3px);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .card-header h2 {
+    font-size: 16px;
+    margin: 0;
+    color: #f5f3ff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent2);
+    box-shadow: 0 0 10px var(--accent2);
+    animation: pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.6); opacity: 0.5; }
+  }
+
+  .card-header a {
+    font-size: 12.5px;
+    color: var(--gold);
+    text-decoration: none;
+    border: 1px solid rgba(255, 215, 106, 0.4);
+    padding: 5px 12px;
+    border-radius: 20px;
+    transition: background 0.3s ease, color 0.3s ease;
+    white-space: nowrap;
+  }
+  .card-header a:hover {
+    background: var(--gold);
+    color: #1a0f3d;
+  }
+
+  .iframe-wrap {
+    position: relative;
+    width: 100%;
+    padding-top: 62.25%; /* preserves 600x373.5 ratio */
+    border-radius: 14px;
+    overflow: hidden;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .iframe-wrap iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: none;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+  .info-grid .stat {
+    padding: 16px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+  .info-grid .stat span {
+    display: block;
+  }
+  .info-grid .stat .label {
+    font-size: 12px;
+    color: #b6b0e0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+  }
+  .info-grid .stat .value {
+    font-size: 15px;
+    color: #f5f3ff;
+  }
+
+  footer {
+    text-align: center;
+    font-size: 12.5px;
+    color: #8a83b8;
+    padding-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="glitter-canvas"></canvas>
+<div class="orb orb1" id="orb1"></div>
+<div class="orb orb2" id="orb2"></div>
+<div class="orb orb3" id="orb3"></div>
+
+<div class="page">
+
+  <header class="hero">
+    <h1>Investment Management</h1>
+    <p>Live Power BI dashboard — scroll down to view the full interactive report.</p>
+  </header>
+
+  <section class="card reveal">
+    <div class="card-header">
+      <h2><span class="dot"></span> Report Overview</h2>
+    </div>
+    <div class="info-grid">
+      <div class="stat">
+        <span class="label">Report</span>
+        <span class="value">Investment Management</span>
+      </div>
+      <div class="stat">
+        <span class="label">Source</span>
+        <span class="value">Power BI</span>
+      </div>
+      <div class="stat">
+        <span class="label">Type</span>
+        <span class="value">Embedded View</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card reveal">
+    <div class="card-header">
+      <h2><span class="dot"></span> INVESTMENT_MANAGEMENT</h2>
+      <a href="https://app.powerbi.com/view?r=eyJrIjoiOWMwZDAwY2MtNjEzMS00NGE2LWEyMjItYTEwNDFiMTM0MGE0IiwidCI6IjVmOTA5NjYwLWUxMDQtNDNkNC1hOGViLTA2YjNjNTkxYjBiMSJ9" target="_blank" rel="noopener noreferrer">Open full screen ↗</a>
+    </div>
+    <div class="iframe-wrap">
+      <iframe
+        title="INVESTMENT_MANAGEMENT"
+        src="https://app.powerbi.com/view?r=eyJrIjoiOWMwZDAwY2MtNjEzMS00NGE2LWEyMjItYTEwNDFiMTM0MGE0IiwidCI6IjVmOTA5NjYwLWUxMDQtNDNkNC1hOGViLTA2YjNjNTkxYjBiMSJ9"
+        frameborder="0"
+        allowfullscreen="true">
+      </iframe>
+    </div>
+  </section>
+
+  <footer class="reveal">
+    Report renders only if Power BI sharing settings allow public / embed viewing.
+  </footer>
+
+</div>
+
+<script>
+  // Scroll reveal
+  const revealEls = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15 });
+  revealEls.forEach(el => io.observe(el));
+
+  // Parallax orbs on scroll
+  const orb1 = document.getElementById('orb1');
+  const orb2 = document.getElementById('orb2');
+  const orb3 = document.getElementById('orb3');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    orb1.style.transform = `translateY(${y * 0.15}px)`;
+    orb2.style.transform = `translateY(${-y * 0.1}px)`;
+    orb3.style.transform = `translateY(${y * 0.08}px) translateX(${y * 0.03}px)`;
+  }, { passive: true });
+
+  // Glitter canvas particles
+  const canvas = document.getElementById('glitter-canvas');
+  const ctx = canvas.getContext('2d');
+  let w, h, particles;
+
+  function resize() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = document.body.scrollHeight;
+  }
+
+  function makeParticles(count) {
+    const arr = [];
+    for (let i = 0; i < count; i++) {
+      arr.push({
+        x: Math.random() * w,
+        y: Math.random() * h,
+        r: Math.random() * 1.6 + 0.4,
+        baseAlpha: Math.random() * 0.6 + 0.2,
+        speed: Math.random() * 0.3 + 0.05,
+        twinkleSpeed: Math.random() * 0.02 + 0.005,
+        twinklePhase: Math.random() * Math.PI * 2,
+        hue: Math.random() > 0.7 ? 45 : (Math.random() > 0.5 ? 265 : 195)
+      });
+    }
+    return arr;
+  }
+
+  resize();
+  particles = makeParticles(140);
+  window.addEventListener('resize', () => {
+    resize();
+    particles = makeParticles(140);
+  });
+
+  let scrollOffset = 0;
+  window.addEventListener('scroll', () => {
+    scrollOffset = window.scrollY;
+  }, { passive: true });
+
+  function animate(time) {
+    ctx.clearRect(0, 0, w, h);
+    particles.forEach(p => {
+      const twinkle = Math.sin(time * p.twinkleSpeed + p.twinklePhase) * 0.5 + 0.5;
+      const alpha = p.baseAlpha * twinkle;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y + Math.sin((time * 0.0005) + p.x) * 4, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${p.hue}, 90%, 75%, ${alpha})`;
+      ctx.shadowColor = `hsla(${p.hue}, 90%, 75%, ${alpha})`;
+      ctx.shadowBlur = 4;
+      ctx.fill();
+
+      p.y -= p.speed;
+      if (p.y < -10) {
+        p.y = h + 10;
+        p.x = Math.random() * w;
+      }
+    });
+    requestAnimationFrame(animate);
+  }
+  requestAnimationFrame(animate);
+
+  // Recompute canvas height if content changes size (e.g. after fonts load)
+  window.addEventListener('load', resize);
+</script>
+
+</body>
+</html>
