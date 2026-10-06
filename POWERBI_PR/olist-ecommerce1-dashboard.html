@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Olist E-commerce Dashboard</title>
+<style>
+  :root {
+    --bg1: #0b1020;
+    --bg2: #1b1646;
+    --accent: #7c5cff;
+    --accent2: #22d3ee;
+    --text: #e5e7f0;
+    --muted: #9aa3bd;
+    --card: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.14);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: "Segoe UI", system-ui, Arial, sans-serif;
+    color: var(--text);
+    background: linear-gradient(135deg, var(--bg1), var(--bg2), #0f3057, var(--bg1));
+    background-size: 400% 400%;
+    animation: gradientShift 18s ease infinite;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  @keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Scroll progress bar */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 4px; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    z-index: 100;
+  }
+
+  /* Floating background blobs (parallax on scroll) */
+  .blob {
+    position: fixed; border-radius: 50%; filter: blur(70px);
+    opacity: 0.35; z-index: 0; pointer-events: none;
+    animation: float 14s ease-in-out infinite;
+  }
+  .b1 { width: 380px; height: 380px; background: var(--accent); top: -80px; left: -80px; }
+  .b2 { width: 320px; height: 320px; background: var(--accent2); bottom: -60px; right: -60px; animation-delay: -5s; }
+  .b3 { width: 260px; height: 260px; background: #f472b6; top: 45%; left: 55%; animation-delay: -9s; opacity: 0.22; }
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(40px, -30px) scale(1.1); }
+    66% { transform: translate(-30px, 40px) scale(0.95); }
+  }
+
+  canvas#particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+  .content { position: relative; z-index: 1; }
+
+  /* Navigation */
+  nav {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 6vw;
+    backdrop-filter: blur(12px);
+    background: rgba(11,16,32,0.55);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .logo { font-weight: 700; letter-spacing: 0.5px; }
+  nav .logo span { color: var(--accent2); }
+  nav ul { list-style: none; display: flex; gap: 22px; }
+  nav a { color: var(--muted); text-decoration: none; font-size: 0.92rem; transition: color .2s; }
+  nav a:hover { color: #fff; }
+
+  section { padding: 90px 6vw; max-width: 1250px; margin: 0 auto; }
+
+  /* Hero */
+  .hero { min-height: 82vh; display: flex; flex-direction: column; justify-content: center; text-align: center; align-items: center; }
+  .tag {
+    display: inline-block; padding: 6px 16px; border-radius: 999px;
+    border: 1px solid var(--border); background: var(--card);
+    color: var(--accent2); font-size: 0.85rem; margin-bottom: 22px;
+  }
+  .hero h1 {
+    font-size: clamp(2.2rem, 6vw, 4.2rem); line-height: 1.1; margin-bottom: 18px;
+    background: linear-gradient(90deg, #fff, var(--accent2), var(--accent));
+    background-size: 200% auto;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shine 6s linear infinite;
+  }
+  @keyframes shine { to { background-position: 200% center; } }
+  .hero p { max-width: 640px; color: var(--muted); font-size: 1.1rem; line-height: 1.7; }
+  .btn {
+    margin-top: 32px; display: inline-block; padding: 13px 30px; border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    color: #fff; text-decoration: none; font-weight: 600;
+    box-shadow: 0 8px 30px rgba(124,92,255,0.4);
+    transition: transform .25s, box-shadow .25s;
+  }
+  .btn:hover { transform: translateY(-3px); box-shadow: 0 12px 36px rgba(34,211,238,0.4); }
+  .scroll-hint { margin-top: 50px; color: var(--muted); font-size: 0.85rem; animation: bounce 2s infinite; }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(10px); } }
+
+  h2.title { font-size: clamp(1.6rem, 3.5vw, 2.3rem); margin-bottom: 10px; text-align: center; }
+  .sub { color: var(--muted); text-align: center; margin-bottom: 38px; }
+
+  /* Dashboard frame */
+  .frame-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 18px; padding: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+    backdrop-filter: blur(10px);
+  }
+  .frame-card .bar { display: flex; gap: 7px; padding: 4px 6px 12px; }
+  .frame-card .bar i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+  .bar i:nth-child(1) { background: #ff5f57; } .bar i:nth-child(2) { background: #febc2e; } .bar i:nth-child(3) { background: #28c840; }
+  .frame-wrap { position: relative; width: 100%; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #fff; }
+  .frame-wrap iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+  .fallback { text-align: center; margin-top: 14px; font-size: 0.9rem; color: var(--muted); }
+  .fallback a { color: var(--accent2); }
+
+  /* Info cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 22px; }
+  .card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px 24px; transition: transform .3s, border-color .3s, background .3s;
+  }
+  .card:hover { transform: translateY(-8px); border-color: var(--accent2); background: rgba(255,255,255,0.1); }
+  .card .icon { font-size: 2rem; margin-bottom: 12px; }
+  .card h3 { margin-bottom: 8px; font-size: 1.1rem; }
+  .card p { color: var(--muted); line-height: 1.6; font-size: 0.95rem; }
+
+  /* Scroll reveal */
+  .reveal { opacity: 0; transform: translateY(50px); transition: opacity .9s ease, transform .9s ease; }
+  .reveal.left { transform: translateX(-60px); }
+  .reveal.right { transform: translateX(60px); }
+  .reveal.zoom { transform: scale(0.92); }
+  .reveal.show { opacity: 1; transform: none; }
+  .grid .reveal:nth-child(2) { transition-delay: .15s; }
+  .grid .reveal:nth-child(3) { transition-delay: .3s; }
+  .grid .reveal:nth-child(4) { transition-delay: .45s; }
+
+  footer { text-align: center; padding: 40px 6vw 60px; color: var(--muted); font-size: 0.9rem; border-top: 1px solid var(--border); }
+
+  /* Back to top */
+  #top {
+    position: fixed; right: 24px; bottom: 24px; width: 46px; height: 46px; border-radius: 50%;
+    border: none; cursor: pointer; z-index: 60; color: #fff; font-size: 1.2rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    opacity: 0; pointer-events: none; transition: opacity .3s, transform .3s;
+  }
+  #top.visible { opacity: 1; pointer-events: auto; }
+  #top:hover { transform: translateY(-4px); }
+
+  @media (max-width: 640px) {
+    nav ul { display: none; }
+    section { padding: 60px 5vw; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+    .reveal { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<canvas id="particles"></canvas>
+
+<div class="content">
+  <nav>
+    <div class="logo">Olist<span>.</span>Analytics</div>
+    <ul>
+      <li><a href="#home">Home</a></li>
+      <li><a href="#dashboard">Dashboard</a></li>
+      <li><a href="#about">About</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero" id="home">
+    <span class="tag reveal">Power BI Project</span>
+    <h1 class="reveal">Olist E-commerce Dashboard</h1>
+    <p class="reveal">An interactive Power BI report built on the Olist e-commerce data. Explore the visuals, use the filters and slicers, and discover insights in the sections below.</p>
+    <a href="#dashboard" class="btn reveal">View Dashboard</a>
+    <div class="scroll-hint">Scroll down ↓</div>
+  </section>
+
+  <section id="dashboard">
+    <h2 class="title reveal">Interactive Dashboard</h2>
+    <p class="sub reveal">Click, filter and hover on the report to explore the data.</p>
+    <div class="frame-card reveal zoom">
+      <div class="bar"><i></i><i></i><i></i></div>
+      <div class="frame-wrap">
+        <iframe title="OLIST_ECOMMERCE1"
+          src="https://app.powerbi.com/view?r=eyJrIjoiODM3NWY3MGMtMzQ1YS00YzhkLTkxMTMtYTFkOGEyNzYzY2JhIiwidCI6IjVmOTA5NjYwLWUxMDQtNDNkNC1hOGViLTA2YjNjNTkxYjBiMSJ9"
+          frameborder="0" allowfullscreen="true"></iframe>
+      </div>
+      <p class="fallback">Report not showing? <a href="https://app.powerbi.com/view?r=eyJrIjoiODM3NWY3MGMtMzQ1YS00YzhkLTkxMTMtYTFkOGEyNzYzY2JhIiwidCI6IjVmOTA5NjYwLWUxMDQtNDNkNC1hOGViLTA2YjNjNTkxYjBiMSJ9" target="_blank" rel="noopener">Open it in a new tab</a>.</p>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2 class="title reveal">About the Project</h2>
+    <p class="sub reveal">What this dashboard is built with and for.</p>
+    <div class="grid">
+      <div class="card reveal left">
+        <div class="icon">🛒</div>
+        <h3>E-commerce Data</h3>
+        <p>Built on the Olist e-commerce dataset covering orders, customers, products and sellers.</p>
+      </div>
+      <div class="card reveal">
+        <div class="icon">📊</div>
+        <h3>Power BI</h3>
+        <p>Interactive visuals, slicers and DAX measures to turn raw data into clear insights.</p>
+      </div>
+      <div class="card reveal">
+        <div class="icon">🧹</div>
+        <h3>Power Query</h3>
+        <p>Data cleaning and transformation to prepare a reliable model for analysis.</p>
+      </div>
+      <div class="card reveal right">
+        <div class="icon">💡</div>
+        <h3>Insights</h3>
+        <p>Helps spot trends and patterns so decisions can be backed by data.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>Olist E-commerce Dashboard · Built with Power BI</footer>
+</div>
+
+<button id="top" aria-label="Back to top">↑</button>
+
+<script>
+  // Scroll reveal
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('show'); io.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // Progress bar, parallax blobs, back-to-top
+  const progress = document.getElementById('progress');
+  const topBtn = document.getElementById('top');
+  const blobs = document.querySelectorAll('.blob');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const max = document.documentElement.scrollHeight - window.innerHeight;
+    progress.style.width = (max > 0 ? (y / max) * 100 : 0) + '%';
+    topBtn.classList.toggle('visible', y > 400);
+    blobs.forEach((b, i) => { b.style.marginTop = (y * (0.05 + i * 0.04)) + 'px'; });
+  }, { passive: true });
+  topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // Floating particles
+  const canvas = document.getElementById('particles');
+  const ctx = canvas.getContext('2d');
+  let w, h, dots;
+  function init() {
+    w = canvas.width = window.innerWidth;
+    h = canvas.height = window.innerHeight;
+    const n = Math.min(70, Math.floor(w / 18));
+    dots = Array.from({ length: n }, () => ({
+      x: Math.random() * w, y: Math.random() * h,
+      r: Math.random() * 2 + 0.6,
+      vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4
+    }));
+  }
+  function draw() {
+    ctx.clearRect(0, 0, w, h);
+    dots.forEach((d, i) => {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0 || d.x > w) d.vx *= -1;
+      if (d.y < 0 || d.y > h) d.vy *= -1;
+      ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)'; ctx.fill();
+      for (let j = i + 1; j < dots.length; j++) {
+        const dx = d.x - dots[j].x, dy = d.y - dots[j].y, dist = Math.hypot(dx, dy);
+        if (dist < 120) {
+          ctx.strokeStyle = 'rgba(124,92,255,' + (0.25 * (1 - dist / 120)) + ')';
+          ctx.beginPath(); ctx.moveTo(d.x, d.y); ctx.lineTo(dots[j].x, dots[j].y); ctx.stroke();
+        }
+      }
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', init);
+  init(); draw();
+</script>
+</body>
+</html>
